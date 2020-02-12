@@ -230,6 +230,8 @@ module "dcos-lb" {
   security_groups_masters_internal = ["${local.security_groups_elb_masters_internal}"]
   security_groups_public_agents    = ["${local.security_groups_elb_public_agents}"]
 
+  internal = true
+
   master_instances       = ["${module.dcos-master-instances.instances}"]
   public_agent_instances = ["${module.dcos-publicagent-instances.instances}"]
 
