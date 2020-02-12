@@ -12,7 +12,7 @@ resource "aws_vpc" "dcos_vpc" {
   enable_dns_hostnames = true
 
   tags = {
-    "Name" = "COPS-5813"
+    "Name" = "existingvpc"
   }
 }
 
@@ -103,7 +103,7 @@ resource "aws_route_table_association" "dcos_subnet" {
 
 ###### JUMPHOST #######
 resource "aws_iam_role" "jumphost" {
-  name = "cops5813-jumphost-${data.aws_region.current.name}-role"
+  name = "existingvpc-jumphost-${data.aws_region.current.name}-role"
 
   assume_role_policy = <<EOF
 {
@@ -153,7 +153,12 @@ resource "aws_iam_policy" "jumphost-additionals" {
         "iam:CreateInstanceProfile",
         "iam:PutRolePolicy",
         "iam:AddRoleToInstanceProfile",
-        "iam:PassRole"
+        "iam:PassRole",
+        "iam:DeleteRolePolicy",
+        "iam:RemoveRoleFromInstanceProfile",
+        "iam:DeleteInstanceProfile",
+        "iam:DeleteServerCertificate",
+        "iam:DeleteRole"
       ],
       "Effect": "Allow",
       "Resource": "*"
@@ -269,7 +274,7 @@ resource "null_resource" "run_ansible_from_bootstrap_node_to_install_dcos" {
       "tfenv use 0.11.14",
       "sudo curl https://downloads.dcos.io/binaries/cli/linux/x86-64/dcos-1.13/dcos -o /usr/local/bin/dcos",
       "sudo chmod +x /usr/local/bin/dcos",
-      "mkdir -p ~/cops-5813",
+      "mkdir -p ~/existingvpc",
       "mkdir -p ~/.ssh",
     ]
   }
@@ -301,17 +306,17 @@ resource "null_resource" "run_ansible_from_bootstrap_node_to_install_dcos" {
   }
 
   provisioner "file" {
-    destination = "/home/centos/private-poc/main.tf"
+    destination = "/home/centos/existingvpc/main.tf"
     content     = "${file("${path.module}/../main.tf")}"
   }
 
   provisioner "file" {
-    destination = "/home/centos/private-poc/variables.tf"
+    destination = "/home/centos/existingvpc/variables.tf"
     content     = "${file("${path.module}/../variables.tf")}"
   }
 
   provisioner "file" {
-    destination = "/home/centos/private-poc/terraform.tfvars"
+    destination = "/home/centos/existingvpc/terraform.tfvars"
     content     = "${file("${path.module}/../terraform.tfvars")}"
   }
 }

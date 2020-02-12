@@ -284,31 +284,8 @@ module "dcos-install" {
   dcos_cluster_name = "${var.cluster_name}"
   dcos_version      = "${var.dcos_version}"
 
-  dcos_ip_detect_public_contents = <<EOF
-#!/bin/sh
-set -o nounset -o errexit
-
-curl -fsSL http://whatismyip.akamai.com/
-EOF
-
-  dcos_ip_detect_contents = <<EOF
-#!/bin/sh
-# Example ip-detect script using an external authority
-# Uses the AWS Metadata Service to get the node's internal
-# ipv4 address
-curl -fsSL http://169.254.169.254/latest/meta-data/local-ipv4
-EOF
-
-  dcos_fault_domain_detect_contents = <<EOF
-#!/bin/sh
-set -o nounset -o errexit
-
-METADATA="$(curl http://169.254.169.254/latest/dynamic/instance-identity/document 2>/dev/null)"
-REGION=$(echo $METADATA | grep -Po "\"region\"\s+:\s+\"(.*?)\"" | cut -f2 -d:)
-ZONE=$(echo $METADATA | grep -Po "\"availabilityZone\"\s+:\s+\"(.*?)\"" | cut -f2 -d:)
-
-echo "{\"fault_domain\":{\"region\":{\"name\": \"$REGION\"},\"zone\":{\"name\": \"$ZONE\"}}}"
-EOF
+  # use AWS local resolvers instead of google
+  dcos_resolvers = ["169.254.169.253"]
 
   dcos_variant                   = "${var.dcos_type}"
   dcos_license_key_contents      = "${var.dcos_license_key_contents}"
